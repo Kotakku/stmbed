@@ -7,7 +7,7 @@
 namespace stmbed {
 class PWMOut {
 public:
-	PWMOut(TIM_HandleTypeDef *handle, uint32_t ch) : handle_(handle), ch_(ch) { HAL_TIM_PWM_Start(handle_, ch_) }
+	PWMOut(TIM_HandleTypeDef *handle, uint32_t ch) : handle_(handle), ch_(ch) { HAL_TIM_PWM_Start(handle_, ch_); }
 
     void write(float value) {
         if (value < 0)
@@ -26,12 +26,12 @@ public:
         return ((value > (float)1.0) ? (float)(1.0) : (value));
     }
 
-    PwmOut &operator=(float value) {
+    PWMOut &operator=(float value) {
         write(value);
         return *this;
     }
 
-    PwmOut &operator=(PwmOut &rhs) {
+    PWMOut &operator=(PWMOut &rhs) {
         write(rhs.read());
         return *this;
     }
