@@ -1,4 +1,3 @@
-#include "main.h"
 #include "../can.hpp"
 
 #ifdef HAL_CAN_MODULE_ENABLED

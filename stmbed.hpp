@@ -10,3 +10,5 @@
 #include "stdio_support.hpp"
 #include "ticker.hpp"
 #include "uart.hpp"
+
+#include "misc/format.hpp"
