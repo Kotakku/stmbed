@@ -8,15 +8,12 @@
 namespace stmbed {
 class PWMOut {
 public:
-	PWMOut(TIM_HandleTypeDef *handle, uint32_t ch) : handle_(handle), ch_(ch) { 
-        HAL_TIM_PWM_Start(handle_, ch_); 
-#ifdef STMBED_TIM_APB_DEFINED
+    PWMOut(TIM_HandleTypeDef *handle, uint32_t ch) : handle_(handle), ch_(ch) {
+        HAL_TIM_PWM_Start(handle_, ch_);
         apb_ = Get_TIM_APB(handle_);
         apb_timer_freq_ = Get_APB_TIM_Freq(handle_);
-#endif 
     }
 
-#ifdef STMBED_TIM_APB_DEFINED
     TIM_APB get_apb() const { return apb_; }
     uint32_t get_apb_timer_frequency() const { return apb_timer_freq_; }
     uint32_t get_prescaler() const { return handle_->Instance->PSC; }
@@ -29,7 +26,6 @@ public:
     float get_timer_frequency() const {
         return get_apb_timer_frequency() / (get_prescaler() + 1.0f) / (get_counter_period() + 1.0f);
     }
-#endif
 
     void write(float value) {
         if (value < 0)
@@ -63,12 +59,8 @@ public:
 private:
     TIM_HandleTypeDef *handle_;
     uint32_t ch_;
-
-#ifdef STMBED_TIM_APB_DEFINED
     TIM_APB apb_;
     uint32_t apb_timer_freq_;
-#endif
-
 };
 
 } // namespace stmbed

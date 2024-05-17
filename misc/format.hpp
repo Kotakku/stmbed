@@ -1,13 +1,13 @@
 #pragma once
 
-#include <cstdio>
+#include <stdio.h>
 #include <vector>
 
 namespace stmbed::utility {
 template <class... Args> inline std::vector<char> format(const char *fmt, Args... args) {
-  size_t len = std::snprintf(nullptr, 0, fmt, args...) + 1;
+  size_t len = snprintf(nullptr, 0, fmt, args...) + 1;
   std::vector<char> buf(len);
-  std::snprintf(buf.data(), len, fmt, args...);
+  snprintf(buf.data(), len, fmt, args...);
   return buf;
 }
 } // namespace stmbed::utility

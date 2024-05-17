@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) { 
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     using namespace stmbed;
     callback::callback<Ticker::CallbackFnType>(reinterpret_cast<intptr_t>(htim));
 }
