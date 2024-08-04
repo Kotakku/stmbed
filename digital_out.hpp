@@ -24,6 +24,9 @@ public:
 
     int read() { return HAL_GPIO_ReadPin(port_, pin_); }
     operator int() { return read(); }
+
+    GPIO_TypeDef *get_port() const { return port_; }
+    uint16_t get_pin() const { return pin_; }
 };
 } // namespace stmbed
 #endif // HAL_GPIO_MODULE_ENABLED

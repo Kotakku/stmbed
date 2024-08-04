@@ -29,6 +29,9 @@ public:
     void attach(std::function<CallbackFnType> &&fn, uint8_t priority = 100) {
         callback::attach(pin_, std::move(fn), priority);
     }
+
+    GPIO_TypeDef *get_port() const { return port_; }
+    uint16_t get_pin() const { return pin_; }
 };
 } // namespace stmbed
 #endif // HAL_GPIO_MODULE_ENABLED
