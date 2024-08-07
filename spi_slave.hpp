@@ -1,6 +1,8 @@
 #pragma once
 
 #include "main.h"
+
+#ifdef HSL_SPI_MODULE_ENABLED
 #include "callbacks/callback.hpp"
 
 #include <stdio.h>
@@ -53,3 +55,5 @@ private:
         spi_state_ = SPI_COMPLETE;
     }
 };
+
+#endif
