@@ -101,6 +101,8 @@ public:
         }
     }
 
+    bool writeable() { return HAL_CAN_GetTxMailboxesFreeLevel(handle_) > 0; }
+
     HAL_StatusTypeDef write(uint32_t id, uint8_t *data, uint32_t size, bool is_extended_frame, bool wait_mailbox_free) {
         CAN_TxHeaderTypeDef TxHeader;
         if (is_extended_frame) {
@@ -151,6 +153,8 @@ public:
             Error_Handler();
         }
     }
+
+    bool writeable() { return HAL_FDCAN_GetTxFifoFreeLevel(handle_) > 0; }
 
     HAL_StatusTypeDef write(uint32_t id, uint8_t *data, uint32_t size, bool is_extended_frame, bool wait_mailbox_free) {
         FDCAN_TxHeaderTypeDef tx_header;
