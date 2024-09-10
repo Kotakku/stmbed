@@ -2,7 +2,7 @@
 
 #include "main.h"
 
-#ifdef HSL_SPI_MODULE_ENABLED
+#ifdef HAL_SPI_MODULE_ENABLED
 #include "callbacks/callback.hpp"
 
 #include <stdio.h>
