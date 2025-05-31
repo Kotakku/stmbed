@@ -137,8 +137,17 @@ public:
                 Error_Handler();
             }
 
-            if (HAL_FDCAN_ConfigGlobalFilter(handle_, FDCAN_REJECT, FDCAN_REJECT, FDCAN_REJECT_REMOTE,
-                                             FDCAN_REJECT_REMOTE) != HAL_OK) {
+            FDCAN_FilterTypeDef ext_filter = filter;
+            ext_filter.IdType = FDCAN_EXTENDED_ID;
+            ext_filter.FilterIndex = 1;
+            ext_filter.FilterID1 = filter_id & 0x1FFFFFFF;
+            ext_filter.FilterID2 = filter_mask & 0x1FFFFFFF;
+            if (HAL_FDCAN_ConfigFilter(handle_, &ext_filter) != HAL_OK) {
+                Error_Handler();
+            }
+
+            if (HAL_FDCAN_ConfigGlobalFilter(handle_, FDCAN_ACCEPT_IN_RX_FIFO0, FDCAN_ACCEPT_IN_RX_FIFO0,
+                                             FDCAN_ACCEPT_IN_RX_FIFO0, FDCAN_ACCEPT_IN_RX_FIFO0) != HAL_OK) {
                 Error_Handler();
             }
 

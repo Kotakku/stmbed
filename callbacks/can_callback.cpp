@@ -31,6 +31,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
     CANMessage msg;
 
     if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, msg.data.data()) == HAL_OK) {
+        msg.format = (rx_header.IdType == FDCAN_STANDARD_ID) ? CANFormat::CANStandard : CANFormat::CANExtended;
         msg.id = rx_header.Identifier;
         msg.size = rx_header.DataLength;
         callback::callback<CAN::CallbackFnType>(reinterpret_cast<intptr_t>(hfdcan), msg);
