@@ -18,7 +18,12 @@ public:
     }
 
     bool write(uint8_t *tx_buf, uint8_t *rx_buf, size_t length) {
-        if (HAL_SPI_TransmitReceive(handle_, (uint8_t *)tx_buf, (uint8_t *)rx_buf, length, 1000) != HAL_OK) {
+        HAL_StatusTypeDef st = HAL_SPI_TransmitReceive(handle_, tx_buf, rx_buf, length, 1000);
+        if (st != HAL_OK) {
+            // Reset SPI from error/busy state
+            HAL_SPI_Abort(handle_);
+            handle_->State = HAL_SPI_STATE_READY;
+            handle_->ErrorCode = HAL_SPI_ERROR_NONE;
             return false;
         }
         return true;
