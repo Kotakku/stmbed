@@ -40,13 +40,32 @@ public:
     }
 
     bool write_dma(uint8_t *tx_buf, uint8_t *rx_buf, size_t length) {
-        if (HAL_SPI_TransmitReceive_DMA(handle_, (uint8_t *)tx_buf, (uint8_t *)&rx_buf, length) != HAL_OK) {
+        if (HAL_SPI_TransmitReceive_DMA(handle_, tx_buf, rx_buf, static_cast<uint16_t>(length)) != HAL_OK) {
             return false;
         }
         while (__HAL_DMA_GET_COUNTER(handle_->hdmarx) || __HAL_DMA_GET_COUNTER(handle_->hdmatx))
             ;
         return true;
     }
+
+    // Start non-blocking DMA transfer (returns immediately)
+    bool write_dma_start(uint8_t *tx_buf, uint8_t *rx_buf, size_t length) {
+        return HAL_SPI_TransmitReceive_DMA(handle_, tx_buf, rx_buf, static_cast<uint16_t>(length)) == HAL_OK;
+    }
+
+    // Check if SPI DMA transfer is still in progress
+    bool is_busy() const {
+        return handle_->State != HAL_SPI_STATE_READY;
+    }
+
+    // Abort DMA transfer and reset SPI to ready state
+    void abort_dma() {
+        HAL_SPI_Abort(handle_);
+        handle_->State = HAL_SPI_STATE_READY;
+        handle_->ErrorCode = HAL_SPI_ERROR_NONE;
+    }
+
+    SPI_HandleTypeDef *handle() { return handle_; }
 
 private:
     SPI_HandleTypeDef *handle_;
