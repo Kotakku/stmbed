@@ -20,7 +20,7 @@ public:
     bool write(uint8_t *tx_buf, uint8_t *rx_buf, size_t length) {
         HAL_StatusTypeDef st = HAL_SPI_TransmitReceive(handle_, tx_buf, rx_buf, length, 1000);
         if (st != HAL_OK) {
-            // Reset SPI from error/busy state
+            // Reset SPI from error/busy state (polling mode, no DMA involved)
             HAL_SPI_Abort(handle_);
             handle_->State = HAL_SPI_STATE_READY;
             handle_->ErrorCode = HAL_SPI_ERROR_NONE;
@@ -58,9 +58,21 @@ public:
         return handle_->State != HAL_SPI_STATE_READY;
     }
 
-    // Abort DMA transfer and reset SPI to ready state
+    // Abort DMA transfer and reset SPI to ready state.
+    // Disables SPI first to stop DMA requests, preventing HAL_DMA_Abort stall.
     void abort_dma() {
-        HAL_SPI_Abort(handle_);
+        // 1. Disable SPI DMA requests and SPI peripheral
+        //    This stops the SPI from generating DMA requests, so DMA can suspend.
+        CLEAR_BIT(handle_->Instance->CFG1, SPI_CFG1_RXDMAEN | SPI_CFG1_TXDMAEN);
+        CLEAR_BIT(handle_->Instance->CR1, SPI_CR1_SPE);
+
+        // 2. Abort DMA channels (safe now that SPI is disabled)
+        if (handle_->hdmatx)
+            HAL_DMA_Abort(handle_->hdmatx);
+        if (handle_->hdmarx)
+            HAL_DMA_Abort(handle_->hdmarx);
+
+        // 3. Reset HAL SPI state (SPI will be re-enabled by next HAL_SPI_TransmitReceive_DMA)
         handle_->State = HAL_SPI_STATE_READY;
         handle_->ErrorCode = HAL_SPI_ERROR_NONE;
     }
