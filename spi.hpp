@@ -58,21 +58,32 @@ public:
         return handle_->State != HAL_SPI_STATE_READY;
     }
 
-    // Abort DMA transfer and reset SPI to ready state.
-    // Disables SPI first to stop DMA requests, preventing HAL_DMA_Abort stall.
+    // Abort DMA transfer and fully reset SPI + DMA to clean state.
+    //
+    // Cannot use HAL_DMA_Abort: after SPI is disabled, GPDMA channels sit idle
+    // waiting for hardware requests that will never come. HAL_DMA_Abort sets SUSP
+    // and waits for SUSPF, but SUSPF never asserts because no transfer is active.
+    // Instead, directly write RESET bit to force-reset the GPDMA channel.
     void abort_dma() {
         // 1. Disable SPI DMA requests and SPI peripheral
-        //    This stops the SPI from generating DMA requests, so DMA can suspend.
         CLEAR_BIT(handle_->Instance->CFG1, SPI_CFG1_RXDMAEN | SPI_CFG1_TXDMAEN);
         CLEAR_BIT(handle_->Instance->CR1, SPI_CR1_SPE);
 
-        // 2. Abort DMA channels (safe now that SPI is disabled)
-        if (handle_->hdmatx)
-            HAL_DMA_Abort(handle_->hdmatx);
-        if (handle_->hdmarx)
-            HAL_DMA_Abort(handle_->hdmarx);
+        // 2. Force-reset GPDMA channels (bypass HAL_DMA_Abort entirely)
+        auto force_reset_dma = [](DMA_HandleTypeDef *hdma) {
+            if (!hdma || !hdma->Instance) return;
+            // Direct RESET - no SUSP/SUSPF needed
+            hdma->Instance->CCR |= DMA_CCR_RESET;
+            for (volatile int i = 0; i < 1000; i++) {
+                if ((hdma->Instance->CCR & DMA_CCR_EN) == 0) break;
+            }
+            hdma->State = HAL_DMA_STATE_RESET;
+            HAL_DMA_Init(hdma);
+        };
+        force_reset_dma(handle_->hdmatx);
+        force_reset_dma(handle_->hdmarx);
 
-        // 3. Reset HAL SPI state (SPI will be re-enabled by next HAL_SPI_TransmitReceive_DMA)
+        // 3. Reset HAL SPI state
         handle_->State = HAL_SPI_STATE_READY;
         handle_->ErrorCode = HAL_SPI_ERROR_NONE;
     }
